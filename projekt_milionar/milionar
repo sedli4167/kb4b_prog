@@ -1,0 +1,39 @@
+import random
+
+uzivatele = "projekt_milionar\uzivatele.txt"
+
+def nacist_uzivatele():
+
+    with open("projekt_milionar\uzivatele.txt", "r", encoding="utf-8") as file:
+        uzivatele = file.readlines()
+
+        for i in range(len(uzivatele)):
+            uzivatele[i] = uzivatele[i].strip()
+
+        uzivatele = ["jmeno:heslo"]
+
+
+
+def ulozit_uzivatele():
+    jmeno = input("zadej uzivatelske jmeno: ")
+    heslo = input("zadej heslo: ")
+    
+    with open("projekt_milionar\uzivatele.txt", "a", encoding="utf-8") as file:
+        file.write(f"{jmeno}:{heslo}\n")
+
+def login():
+    uzivatele = nacist_uzivatele()
+    
+    jmeno = input("zadej uzivatelske jmeno: ")
+    heslo = input("zadej heslo: ")
+    
+    with open("projekt_milionar\uzivatele.txt", "r", encoding="utf-8") as file:
+        for radek in file.readlines():
+            print(radek.split(":"))
+    
+    if jmeno in uzivatele and jmeno == heslo: 
+        print("jste prihlasen")
+    else:
+        print("spatne jmeno nebo heslo")
+        
+ 
