@@ -1,39 +1,152 @@
 import random
+import csv
+import matplotlib.pyplot as plt
 
-uzivatele = "projekt_milionar\uzivatele.txt"
-
-def nacist_uzivatele():
-
-    with open("projekt_milionar\uzivatele.txt", "r", encoding="utf-8") as file:
-        uzivatele = file.readlines()
-
-        for i in range(len(uzivatele)):
-            uzivatele[i] = uzivatele[i].strip()
-
-        uzivatele = ["jmeno:heslo"]
-
-
-
-def ulozit_uzivatele():
-    jmeno = input("zadej uzivatelske jmeno: ")
-    heslo = input("zadej heslo: ")
-    
-    with open("projekt_milionar\uzivatele.txt", "a", encoding="utf-8") as file:
-        file.write(f"{jmeno}:{heslo}\n")
 
 def login():
-    uzivatele = nacist_uzivatele()
-    
+    jmeno = input("Zadej uzivatelske jmeno: ")
+    heslo = input("Zadej heslo: ")
+
+    with open(r"projekt_milionar\uzivatele.txt", "r", encoding="utf-8") as file:
+        for radek in file.readlines():
+            data = radek.strip().split(":")
+            if jmeno == data[0] and heslo == data[1]:
+                print("jste prihlasen")
+                return jmeno
+
+            print("chyba v prihlaseni, zkuste to znovu")
+
+
+def registrace():
     jmeno = input("zadej uzivatelske jmeno: ")
     heslo = input("zadej heslo: ")
-    
-    with open("projekt_milionar\uzivatele.txt", "r", encoding="utf-8") as file:
-        for radek in file.readlines():
-            print(radek.split(":"))
-    
-    if jmeno in uzivatele and jmeno == heslo: 
-        print("jste prihlasen")
-    else:
-        print("spatne jmeno nebo heslo")
+
+    with open(r"projekt_milionar\uzivatele.txt", "a", encoding="utf-8") as file:
+        file.write(f"{jmeno}:{heslo}\n")
+
+
+def hra():
+    lehke = []
+    stredni = []
+    tezke = []
+
+    with open("projekt_milionar/quiz_questions.csv", "r", encoding="utf-8", newline='') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            otazka = row["question"].strip()
+            odpoved = row["correct_answer"].strip()
+            obtiznost = row["difficulty"].strip().lower()
+
+            if obtiznost == "easy":
+                lehke.append([otazka, odpoved])
+            elif obtiznost == "medium":
+                stredni.append([otazka, odpoved])
+            elif obtiznost == "hard":
+                tezke.append([otazka, odpoved])
+
+    print("Zacina hra, odpovidej True/False")
+
+    for kolo in range(1, 16):
+        if kolo <= 5:
+            seznam = lehke
+        elif kolo <= 10:
+            seznam = stredni
+        else:
+            seznam = tezke
+
+        otazka = random.choice(seznam)
+
+        print(f"\nOtazka {kolo}/15")
+        print(otazka[0])
+
+        odpoved = input("True / False: ").strip()
+
+        if odpoved.lower() != otazka[1].lower():
+            print("Spatne, konec hry")
+            return
+
+        print("Spravne")
+
+    print("Vyhral si!")
+
+
+
+def statistika():
+    obtiznosti = {}
+    kategorie = {}
+
+    with open("projekt_milionar/quiz_questions.csv", "r", encoding="utf-8", newline='') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            obtiz = row["difficulty"].strip().lower()
+            kat = row["category"].strip()
+
+            if obtiz in obtiznosti:
+                obtiznosti[obtiz] += 1
+            else:
+                obtiznosti[obtiz] = 1
+
+            if kat in kategorie:
+                kategorie[kat] += 1
+            else:
+                kategorie[kat] = 1
+
+    print("pocet otazek podle obtiznosti:")
+    for obtiz, pocet in obtiznosti.items():
+        print(f"{obtiz.capitalize()}: {pocet}")
+
+    print("pocet otazek podle kategorie:")
+    for kat, pocet in kategorie.items():
+        print(f"{kat}: {pocet}")
+
+    plt.figure(figsize=(8,4))
+    plt.bar(obtiznosti.keys(), obtiznosti.values(), color=['blue'])
+    plt.title("pomer obtiznosti otazek")
+    plt.xlabel("obtiznost")
+    plt.ylabel("pocet otazek")
+    plt.show()
+
+    plt.figure(figsize=(10,6))
+    plt.bar(kategorie.keys(), kategorie.values(), color='blue')
+    plt.title("pomer kategorii otazek")
+    plt.xlabel("obtiznost")
+    plt.ylabel("pocet otazek")
+    plt.xticks(rotation=45, ha="right")
+    plt.show()
+
+def menu():
+    print("Na zacatek se prosim prihlaste nebo zaregistrujte")
         
- 
+    prihlaseny_uzivatel = None
+
+    while True:
+        if prihlaseny_uzivatel is None:
+        
+            print("1. Prihlas se ")
+            print("2. Zaregistruj se")
+
+            volba = input("Zadej akci: ")
+
+            if volba == "1":
+                prihlaseny_uzivatel = login()
+            elif volba == "2":
+                registrace()
+            else: 
+                print("Neplatna volba")
+        
+        else:
+            print("1. Zobrazit statistiky otazek")
+            print("2. Hrat")
+            print("3. Ukoncit")
+        
+            volba = input("Vyber akci: ")
+
+            if volba == "1":
+                statistika()
+            elif volba == "2":
+                hra()
+            elif volba == "3":
+                print("Konec")
+                break
+
+menu()
